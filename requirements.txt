@@ -6,3 +6,5 @@ pdfplumber
 python-dotenv
 google-generativeai
 reportlab
+easyocr
+numpy
