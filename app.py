@@ -1,5 +1,5 @@
 import streamlit as st
-import pytesseract
+import easyocr
 from PIL import Image
 import docx
 import pdfplumber
@@ -12,14 +12,13 @@ import google.generativeai as genai
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import numpy as np
 
-# Configure Tesseract: set path based on OS.
-if os.name == 'nt':  # Windows
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-else:  # Likely Linux (e.g., on Streamlit Cloud)
-    pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
+# Initialize EasyOCR Reader (supports multiple languages; here we use English only)
+reader = easyocr.Reader(['en'])
 
 # Load environment and configure the Gemini model.
+from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=api_key)
@@ -65,8 +64,15 @@ Our solution uses OCR, NLP, ML, and AI-driven data extraction to automatically v
 """)
 
 # Functions to extract text
+
 def extract_text_from_image(image):
-    return pytesseract.image_to_string(image)
+    # Use EasyOCR to extract text from an image
+    # Convert image to RGB if needed (EasyOCR expects a numpy array in RGB)
+    image = image.convert("RGB")
+    # EasyOCR returns a list of results; each result is [bounding_box, text, confidence]
+    results = reader.readtext(np.array(image))
+    extracted_text = " ".join([res[1] for res in results])
+    return extracted_text
 
 def extract_text_from_docx(doc):
     return "".join([para.text for para in doc.paragraphs])
