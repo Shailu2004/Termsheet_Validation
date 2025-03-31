@@ -13,8 +13,10 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-# Configure Tesseract
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# Configure Tesseract only on Windows.
+if os.name == 'nt':
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# On non-Windows systems, ensure Tesseract is installed and available in PATH.
 
 # Load environment and configure the Gemini model.
 load_dotenv()
@@ -179,7 +181,7 @@ option = st.selectbox("📂 Choose an input type:", ["Image", "Email Body", "Doc
 extracted_text = ""
 
 if option == "Image":
-    uploaded_image = st.file_uploader("📷 Upload an Image", type=["png", "jpg", "jpeg"])
+    uploaded_image = st.file_uploader("📷 Upload an Image", type=["png", "jpg", "jpeg"], key="imageUploader")
     if uploaded_image:
         image = Image.open(uploaded_image)
         st.image(image, caption="📌 Uploaded Image", use_column_width=True)
@@ -187,7 +189,7 @@ if option == "Image":
 elif option == "Email Body":
     extracted_text = st.text_area("📧 Enter Email Body:")
 elif option == "Document (PDF/DOCX/TXT)":
-    uploaded_file = st.file_uploader("📄 Upload a Document", type=["pdf", "docx", "txt"])
+    uploaded_file = st.file_uploader("📄 Upload a Document", type=["pdf", "docx", "txt"], key="docUploader")
     if uploaded_file:
         file_type = uploaded_file.name.split(".")[-1]
         if file_type == "docx":
@@ -251,7 +253,7 @@ if extracted_text:
         mime="application/pdf"
     )
     
-    # Call LLM for explanation and feedback
+    # Call LLM for explanation and feedback and display using st.markdown
     st.write("📝 Generating explanation and feedback for the term sheet...")
     with st.spinner("Getting AI explanation..."):
         time.sleep(2)
