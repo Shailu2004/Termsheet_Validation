@@ -13,10 +13,11 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-# Configure Tesseract only on Windows.
-if os.name == 'nt':
+# Configure Tesseract: set path based on OS.
+if os.name == 'nt':  # Windows
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-# On non-Windows systems, ensure Tesseract is installed and available in PATH.
+else:  # Likely Linux (e.g., on Streamlit Cloud)
+    pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 
 # Load environment and configure the Gemini model.
 load_dotenv()
